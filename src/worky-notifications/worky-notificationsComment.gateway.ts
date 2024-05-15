@@ -7,7 +7,8 @@ import {
 import { Server } from 'socket.io';
 import { CommentI } from 'src/interfaces/comments/comments.interface';
 
-@WebSocketGateway({ port: Number(process.env.WS_PORT), cors: { origin: '*' } })
+const WORKY_NOTIFICATIONS_PORT = parseInt(process.env.WS_PORT);
+@WebSocketGateway(WORKY_NOTIFICATIONS_PORT, { cors: { origin: '*' } })
 export class WorkyNotificationsGateway {
   constructor() {}
   @WebSocketServer()
