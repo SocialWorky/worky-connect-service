@@ -5,8 +5,8 @@ services:
     restart: always
     container_name: worky-notifications-dev
     ports:
-      - ${APP_PORT}:3000
-      - ${WS_PORT}:3001
+      - ${APP_PORT}:${APP_PORT}
+      - ${WS_PORT}:${WS_PORT}
     environment:
       SERVER_HOST: ${SERVER_HOST}
       APP_VERSION: ${APP_VERSION}
