@@ -23,6 +23,7 @@ RUN npm install --production --frozen-lockfile
 
 FROM node:22.1.0 as prod
 EXPOSE ${APP_PORT}
+EXPOSE ${WS_PORT}
 WORKDIR /app
 ENV APP_VERSION=${APP_VERSION}
 COPY --from=prod-deps /app/node_modules ./node_modules
