@@ -6,6 +6,7 @@ services:
     container_name: worky-notifications-dev
     ports:
       - ${APP_PORT}:3000
+      - ${WS_PORT}:3001
     environment:
       SERVER_HOST: ${SERVER_HOST}
       APP_VERSION: ${APP_VERSION}
