@@ -1,0 +1,15 @@
+version: "3"
+services:
+  app:
+    image: socialworky/notifications-dev:${GIT_SHA}
+    restart: always
+    container_name: worky-notifications-dev
+    ports:
+      - ${APP_PORT}:3000
+    environment:
+      SERVER_HOST: ${SERVER_HOST}
+      APP_VERSION: ${APP_VERSION}
+      APP_PORT: ${APP_PORT}
+      WS_PORT: ${WS_PORT}
+    dns:
+      - 1.1.1.1
