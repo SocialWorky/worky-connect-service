@@ -1,14 +1,8 @@
 // create-notification.dto.ts
-import {
-  IsString,
-  IsOptional,
-  IsBoolean,
-  IsUUID,
-  IsJSON,
-} from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsJSON } from 'class-validator';
 
 export class CreateNotificationDto {
-  @IsUUID()
+  @IsString()
   userId: string;
 
   @IsString()

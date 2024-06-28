@@ -19,7 +19,7 @@ export class Notification {
   @Column()
   content: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
   @Column({ default: false })
