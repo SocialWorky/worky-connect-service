@@ -19,7 +19,7 @@ export class NotificationsService {
 
   getUserNotifications(userId: string): Promise<Notification[]> {
     return this.notificationsRepository.find({
-      where: { userId },
+      where: { userId: userId },
       order: { createdAt: 'DESC' },
     });
   }
