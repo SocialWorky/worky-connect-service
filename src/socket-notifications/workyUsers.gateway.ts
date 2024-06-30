@@ -59,7 +59,6 @@ export class WorkyUsersGateway
 
   @SubscribeMessage('refreshUserStatuses')
   handleRefreshUserStatuses() {
-    this.logger.log('Refresh user statuses');
     this.server.emit('userStatus', this.usersOnline());
   }
 
