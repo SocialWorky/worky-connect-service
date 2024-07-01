@@ -24,9 +24,9 @@ export class NotificationsService {
     });
   }
 
-  markAsRead(notificationId: string): Promise<void> {
-    return this.notificationsRepository
-      .update(notificationId, { read: true })
-      .then(() => {});
+  async markAsRead(notificationId: string): Promise<void> {
+    await this.notificationsRepository.update(notificationId, {
+      read: true,
+    });
   }
 }

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Controller, Get, Post, Body, Param, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Put } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
@@ -18,11 +18,8 @@ export class NotificationsController {
     return this.notificationsService.getUserNotifications(userId);
   }
 
-  @Patch(':id/read')
-  markAsRead(
-    @Param('id') id: string,
-    @Body() updateNotificationDto: UpdateNotificationDto,
-  ) {
-    return this.notificationsService.markAsRead(id);
+  @Put(':id')
+  async markAsRead(@Param('id') id: string) {
+    return await this.notificationsService.markAsRead(id);
   }
 }
