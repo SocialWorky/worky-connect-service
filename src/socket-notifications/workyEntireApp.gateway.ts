@@ -1,4 +1,5 @@
 import {
+  MessageBody,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -15,7 +16,7 @@ export class WorkyEntireAppGateway {
   @WebSocketServer()
   server: Server;
   @SubscribeMessage('generalNotification')
-  handleNewComment() {
-    this.server.emit('generalNotification');
+  handleNewComment(@MessageBody() payload?: any) {
+    this.server.emit('generalNotification', payload);
   }
 }
