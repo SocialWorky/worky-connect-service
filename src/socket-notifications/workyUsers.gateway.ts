@@ -38,7 +38,8 @@ export class WorkyUsersGateway
           status: 'online',
         };
         this.onlineUsers.push(dataUser);
-        this.server.emit('userStatus', this.usersOnline());
+        this.server.emit('userStatus', dataUser); // Emit individual user status
+        this.server.emit('initialUserStatuses', this.usersOnline()); // Emit all users
       }
     }
   }
@@ -49,7 +50,8 @@ export class WorkyUsersGateway
       const index = this.onlineUsers.findIndex((user) => user._id === userId);
       if (index !== -1) {
         this.onlineUsers.splice(index, 1);
-        this.server.emit('userStatus', this.usersOnline());
+        this.server.emit('userStatus', { _id: userId, status: 'offline' }); // Emit individual user status
+        this.server.emit('initialUserStatuses', this.usersOnline()); // Emit all users
       }
     }
   }
@@ -66,7 +68,8 @@ export class WorkyUsersGateway
       const index = this.onlineUsers.findIndex((user) => user._id === userId);
       if (index !== -1) {
         this.onlineUsers.splice(index, 1);
-        this.server.emit('userStatus', this.usersOnline());
+        this.server.emit('userStatus', { _id: userId, status: 'offline' }); // Emit individual user status
+        this.server.emit('initialUserStatuses', this.usersOnline()); // Emit all users
       }
     }
   }
@@ -93,7 +96,8 @@ export class WorkyUsersGateway
           status: 'online',
         };
         this.onlineUsers.push(dataUser);
-        this.server.emit('userStatus', this.usersOnline());
+        this.server.emit('userStatus', dataUser); // Emit individual user status
+        this.server.emit('initialUserStatuses', this.usersOnline()); // Emit all users
       }
     }
   }
