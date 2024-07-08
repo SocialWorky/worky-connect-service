@@ -26,22 +26,31 @@ export class WorkyUsersGateway
     const username = client.handshake.query.username as string;
 
     if (userId) {
-      this.addOrUpdateUser({
-        _id: userId,
-        avatar,
-        name,
-        role,
-        email,
-        username,
-        status: 'online',
-      });
+      const user = this.onlineUsers.find((user) => user._id === userId);
+      if (!user) {
+        const dataUser = {
+          _id: userId,
+          avatar,
+          name,
+          role,
+          email,
+          username,
+          status: 'online',
+        };
+        this.onlineUsers.push(dataUser);
+        this.server.emit('userStatus', this.usersOnline());
+      }
     }
   }
 
   handleDisconnect(client: Socket) {
     const userId = client.handshake.query.id as string;
     if (userId) {
-      this.removeUser(userId);
+      const index = this.onlineUsers.findIndex((user) => user._id === userId);
+      if (index !== -1) {
+        this.onlineUsers.splice(index, 1);
+        this.server.emit('userStatus', this.usersOnline());
+      }
     }
   }
 
@@ -54,7 +63,11 @@ export class WorkyUsersGateway
   handleLogoutUser(client: Socket) {
     const userId = client.handshake.query.id as string;
     if (userId) {
-      this.removeUser(userId);
+      const index = this.onlineUsers.findIndex((user) => user._id === userId);
+      if (index !== -1) {
+        this.onlineUsers.splice(index, 1);
+        this.server.emit('userStatus', this.usersOnline());
+      }
     }
   }
 
@@ -68,33 +81,20 @@ export class WorkyUsersGateway
     const username = client.handshake.query.username as string;
 
     if (userId) {
-      this.addOrUpdateUser({
-        _id: userId,
-        avatar,
-        name,
-        role,
-        email,
-        username,
-        status: 'online',
-      });
-    }
-  }
-
-  private addOrUpdateUser(user: any) {
-    const index = this.onlineUsers.findIndex((u) => u._id === user._id);
-    if (index === -1) {
-      this.onlineUsers.push(user);
-    } else {
-      this.onlineUsers[index] = user;
-    }
-    this.server.emit('userStatus', this.usersOnline());
-  }
-
-  private removeUser(userId: string) {
-    const index = this.onlineUsers.findIndex((u) => u._id === userId);
-    if (index !== -1) {
-      this.onlineUsers.splice(index, 1);
-      this.server.emit('userStatus', this.usersOnline());
+      const user = this.onlineUsers.find((user) => user._id === userId);
+      if (!user) {
+        const dataUser = {
+          _id: userId,
+          avatar,
+          name,
+          role,
+          email,
+          username,
+          status: 'online',
+        };
+        this.onlineUsers.push(dataUser);
+        this.server.emit('userStatus', this.usersOnline());
+      }
     }
   }
 
