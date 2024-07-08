@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -27,53 +28,48 @@ export class WorkyUsersGateway
     if (userId) {
       const user = this.onlineUsers.find((user) => user._id === userId);
       if (user) {
-        return;
+        user.status = 'online';
+      } else {
+        const dataUser = {
+          _id: userId,
+          avatar,
+          name,
+          role,
+          email,
+          username,
+          status: 'online',
+        };
+        this.onlineUsers.push(dataUser);
       }
-      const dataUser = {
-        _id: userId,
-        avatar,
-        name,
-        role,
-        email,
-        username,
-        status: 'online',
-      };
-      this.onlineUsers.push(dataUser);
-      this.server.emit('userStatus', this.usersOnline());
+      this.server.emit('initialUserStatuses', this.usersOnline());
     }
   }
 
   handleDisconnect(client: Socket) {
     const userId = client.handshake.query.id as string;
     if (userId) {
-      const user = this.onlineUsers.find((user) => user._id === userId);
-      if (!user) {
-        return;
-      }
       const index = this.onlineUsers.findIndex((user) => user._id === userId);
-      this.onlineUsers.splice(index, 1);
-
-      this.server.emit('userStatus', this.usersOnline());
+      if (index !== -1) {
+        this.onlineUsers.splice(index, 1);
+        this.server.emit('userStatus', this.usersOnline());
+      }
     }
   }
 
   @SubscribeMessage('refreshUserStatuses')
-  handleRefreshUserStatuses() {
-    this.server.emit('userStatus', this.usersOnline());
+  handleRefreshUserStatuses(client: Socket) {
+    this.server.emit('initialUserStatuses', this.usersOnline());
   }
 
   @SubscribeMessage('logoutUser')
   handleLogoutUser(client: Socket) {
     const userId = client.handshake.query.id as string;
     if (userId) {
-      const user = this.onlineUsers.find((user) => user._id === userId);
-      if (!user) {
-        return;
-      }
       const index = this.onlineUsers.findIndex((user) => user._id === userId);
-      this.onlineUsers.splice(index, 1);
-
-      this.server.emit('userStatus', this.usersOnline());
+      if (index !== -1) {
+        this.onlineUsers.splice(index, 1);
+        this.server.emit('userStatus', this.usersOnline());
+      }
     }
   }
 
@@ -87,20 +83,19 @@ export class WorkyUsersGateway
     const username = client.handshake.query.username as string;
     if (userId) {
       const user = this.onlineUsers.find((user) => user._id === userId);
-      if (user) {
-        return;
+      if (!user) {
+        const dataUser = {
+          _id: userId,
+          avatar,
+          name,
+          role,
+          email,
+          username,
+          status: 'online',
+        };
+        this.onlineUsers.push(dataUser);
+        this.server.emit('userStatus', this.usersOnline());
       }
-      const dataUser = {
-        _id: userId,
-        avatar,
-        name,
-        role,
-        email,
-        username,
-        status: 'online',
-      };
-      this.onlineUsers.push(dataUser);
-      this.server.emit('userStatus', this.usersOnline());
     }
   }
 
