@@ -45,6 +45,8 @@ lerna-debug.log*
 # temp directory
 .temp
 .tmp
+notifications-data
+notifications-db
 
 # Runtime data
 pids

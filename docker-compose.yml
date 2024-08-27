@@ -1,0 +1,32 @@
+version: "3"
+services:
+  db:
+    container_name: notificationsDB
+    image: postgres:15.1
+    restart: always
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}
+    volumes:
+      - ./notifications-db:/var/lib/postgresql/data
+    ports:
+      - ${DB_PORT}:5432
+  
+  pgAdmin:
+    depends_on:
+      - db
+    container_name: pgAdmin-notifications
+    image: dpage/pgadmin4:6.17
+    restart: always
+    ports:
+      - ${PGADMIN_PORT}:80
+    environment:
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+    volumes:
+      - ./notifications-data:/var/lib/pgadmin
+
+volumes:
+  postgres-db:
+    external: false
