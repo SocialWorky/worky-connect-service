@@ -54,48 +54,33 @@ export class WorkyUsersGateway
     }
   }
 
+  @SubscribeMessage('userInactive')
+  handleUserInactive(client: Socket) {
+    const userId = client.handshake.query.id as string;
+    if (userId) {
+      const user = this.onlineUsers.find((user) => user._id === userId);
+      if (user) {
+        user.status = 'inactive';
+        this.server.emit('initialUserStatuses', this.usersOnline());
+      }
+    }
+  }
+
+  @SubscribeMessage('userActive')
+  handleUserActive(client: Socket) {
+    const userId = client.handshake.query.id as string;
+    if (userId) {
+      const user = this.onlineUsers.find((user) => user._id === userId);
+      if (user) {
+        user.status = 'online';
+        this.server.emit('initialUserStatuses', this.usersOnline());
+      }
+    }
+  }
+
   @SubscribeMessage('refreshUserStatuses')
   handleRefreshUserStatuses() {
     this.server.emit('initialUserStatuses', this.usersOnline());
-  }
-
-  @SubscribeMessage('logoutUser')
-  handleLogoutUser(client: Socket) {
-    const userId = client.handshake.query.id as string;
-    if (userId) {
-      const index = this.onlineUsers.findIndex((user) => user._id === userId);
-      if (index !== -1) {
-        this.onlineUsers.splice(index, 1);
-        this.server.emit('initialUserStatuses', this.usersOnline());
-      }
-    }
-  }
-
-  @SubscribeMessage('loginUser')
-  handleLoginUser(client: Socket) {
-    const userId = client.handshake.query.id as string;
-    const avatar = client.handshake.query.avatar as string;
-    const name = client.handshake.query.name as string;
-    const role = client.handshake.query.role as string;
-    const email = client.handshake.query.email as string;
-    const username = client.handshake.query.username as string;
-
-    if (userId) {
-      const user = this.onlineUsers.find((user) => user._id === userId);
-      if (!user) {
-        const dataUser = {
-          _id: userId,
-          avatar,
-          name,
-          role,
-          email,
-          username,
-          status: 'online',
-        };
-        this.onlineUsers.push(dataUser);
-        this.server.emit('initialUserStatuses', this.usersOnline());
-      }
-    }
   }
 
   usersOnline() {
