@@ -1,4 +1,5 @@
 import {
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
@@ -7,6 +8,7 @@ import {
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import { Logger } from '@nestjs/common';
+import { TokenData } from 'src/interfaces/tokenData.interface';
 
 @WebSocketGateway(parseInt(process.env.WS_PORT), { cors: { origin: '*' } })
 export class WorkyUsersGateway
@@ -46,33 +48,26 @@ export class WorkyUsersGateway
   handleDisconnect(client: Socket) {
     const userId = client.handshake.query.id as string;
     if (userId) {
-      const index = this.onlineUsers.findIndex((user) => user._id === userId);
-      if (index !== -1) {
-        this.onlineUsers.splice(index, 1);
+      const user = this.onlineUsers.find((user) => user._id === userId);
+      if (user) {
+        user.status = 'inactive';
         this.server.emit('initialUserStatuses', this.usersOnline());
       }
     }
   }
 
   @SubscribeMessage('loginUser')
-  handleLoginUser(client: Socket) {
-    const userId = client.handshake.query.id as string;
-    const avatar = client.handshake.query.avatar as string;
-    const name = client.handshake.query.name as string;
-    const role = client.handshake.query.role as string;
-    const email = client.handshake.query.email as string;
-    const username = client.handshake.query.username as string;
-
-    if (userId) {
-      const user = this.onlineUsers.find((user) => user._id === userId);
+  handleLoginUser(@MessageBody() payload: TokenData) {
+    if (payload.id) {
+      const user = this.onlineUsers.find((user) => user._id === payload.id);
       if (!user) {
         const dataUser = {
-          _id: userId,
-          avatar,
-          name,
-          role,
-          email,
-          username,
+          _id: payload.id,
+          avatar: payload.avatar,
+          name: payload.name,
+          role: payload.role,
+          email: payload.email,
+          username: payload.username,
           status: 'online',
         };
         this.onlineUsers.push(dataUser);
@@ -82,8 +77,8 @@ export class WorkyUsersGateway
   }
 
   @SubscribeMessage('logoutUser')
-  handleLogoutUser(client: Socket) {
-    const userId = client.handshake.query.id as string;
+  handleLogoutUser(@MessageBody() payload: TokenData) {
+    const userId = payload.id;
     if (userId) {
       const index = this.onlineUsers.findIndex((user) => user._id === userId);
       if (index !== -1) {
@@ -94,8 +89,9 @@ export class WorkyUsersGateway
   }
 
   @SubscribeMessage('userInactive')
-  handleUserInactive(client: Socket) {
-    const userId = client.handshake.query.id as string;
+  handleUserInactive(@MessageBody() payload: TokenData) {
+    if (!payload || !payload.id) return;
+    const userId = payload.id;
     if (userId) {
       const user = this.onlineUsers.find((user) => user._id === userId);
       if (user) {
@@ -106,8 +102,9 @@ export class WorkyUsersGateway
   }
 
   @SubscribeMessage('userActive')
-  handleUserActive(client: Socket) {
-    const userId = client.handshake.query.id as string;
+  handleUserActive(@MessageBody() payload: TokenData) {
+    if (!payload || !payload.id) return;
+    const userId = payload.id;
     if (userId) {
       const user = this.onlineUsers.find((user) => user._id === userId);
       if (user) {
