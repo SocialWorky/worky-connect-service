@@ -16,6 +16,9 @@ export class WorkyUsersGateway
 {
   @WebSocketServer() server: Server;
   private onlineUsers = [];
+  private inactivityTimers = new Map<string, NodeJS.Timeout>();
+
+  private readonly INACTIVITY_TIME = 5 * 60 * 1000;
 
   private logger: Logger = new Logger('WorkyUsersGateway');
 
@@ -41,6 +44,7 @@ export class WorkyUsersGateway
         };
         this.onlineUsers.push(dataUser);
       }
+      this.resetInactivityTimer(userId, client);
       this.server.emit('initialUserStatuses', this.usersOnline());
     }
   }
@@ -48,11 +52,9 @@ export class WorkyUsersGateway
   handleDisconnect(client: Socket) {
     const userId = client.handshake.query.id as string;
     if (userId) {
-      const user = this.onlineUsers.find((user) => user._id === userId);
-      if (user) {
-        user.status = 'inactive';
-        this.server.emit('initialUserStatuses', this.usersOnline());
-      }
+      this.clearInactivityTimer(userId);
+      this.logoutUser(userId);
+      this.server.emit('initialUserStatuses', this.usersOnline());
     }
   }
 
@@ -71,6 +73,7 @@ export class WorkyUsersGateway
           status: 'online',
         };
         this.onlineUsers.push(dataUser);
+        this.resetInactivityTimer(payload.id);
         this.server.emit('initialUserStatuses', this.usersOnline());
       }
     }
@@ -80,11 +83,9 @@ export class WorkyUsersGateway
   handleLogoutUser(@MessageBody() payload: TokenData) {
     const userId = payload.id;
     if (userId) {
-      const index = this.onlineUsers.findIndex((user) => user._id === userId);
-      if (index !== -1) {
-        this.onlineUsers.splice(index, 1);
-        this.server.emit('initialUserStatuses', this.usersOnline());
-      }
+      this.clearInactivityTimer(userId);
+      this.logoutUser(userId);
+      this.server.emit('initialUserStatuses', this.usersOnline());
     }
   }
 
@@ -93,6 +94,7 @@ export class WorkyUsersGateway
     if (!payload || !payload.id) return;
     const userId = payload.id;
     if (userId) {
+      this.clearInactivityTimer(userId);
       const user = this.onlineUsers.find((user) => user._id === userId);
       if (user) {
         user.status = 'inactive';
@@ -109,6 +111,7 @@ export class WorkyUsersGateway
       const user = this.onlineUsers.find((user) => user._id === userId);
       if (user) {
         user.status = 'online';
+        this.resetInactivityTimer(userId);
         this.server.emit('initialUserStatuses', this.usersOnline());
       }
     }
@@ -121,5 +124,40 @@ export class WorkyUsersGateway
 
   usersOnline() {
     return this.onlineUsers;
+  }
+
+  private resetInactivityTimer(userId: string, client?: Socket) {
+    if (this.inactivityTimers.has(userId)) {
+      clearTimeout(this.inactivityTimers.get(userId));
+    }
+
+    const timeout = setTimeout(() => {
+      this.handleLogoutDueToInactivity(userId, client);
+    }, this.INACTIVITY_TIME);
+
+    this.inactivityTimers.set(userId, timeout);
+  }
+
+  private clearInactivityTimer(userId: string) {
+    if (this.inactivityTimers.has(userId)) {
+      clearTimeout(this.inactivityTimers.get(userId));
+      this.inactivityTimers.delete(userId);
+    }
+  }
+
+  private logoutUser(userId: string) {
+    const index = this.onlineUsers.findIndex((user) => user._id === userId);
+    if (index !== -1) {
+      this.onlineUsers.splice(index, 1);
+    }
+  }
+
+  private handleLogoutDueToInactivity(userId: string, client?: Socket) {
+    this.clearInactivityTimer(userId);
+    this.logoutUser(userId);
+    if (client) {
+      client.disconnect();
+    }
+    this.server.emit('initialUserStatuses', this.usersOnline());
   }
 }
