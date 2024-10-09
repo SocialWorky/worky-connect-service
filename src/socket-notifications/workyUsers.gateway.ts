@@ -23,6 +23,8 @@ export class WorkyUsersGateway
   private logger: Logger = new Logger('WorkyUsersGateway');
 
   handleConnection(client: Socket) {
+    this.removeInactiveUsers();
+
     const userId = client.handshake.query.id as string;
     const avatar = client.handshake.query.avatar as string;
     const name = client.handshake.query.name as string;
@@ -41,6 +43,7 @@ export class WorkyUsersGateway
           email,
           username,
           status: 'online',
+          lastActivity: new Date(),
         };
         this.onlineUsers.push(dataUser);
       }
@@ -71,6 +74,7 @@ export class WorkyUsersGateway
           email: payload.email,
           username: payload.username,
           status: 'online',
+          lastActivity: new Date(),
         };
         this.onlineUsers.push(dataUser);
         this.resetInactivityTimer(payload.id);
@@ -124,6 +128,17 @@ export class WorkyUsersGateway
 
   usersOnline() {
     return this.onlineUsers;
+  }
+
+  private removeInactiveUsers() {
+    const now = new Date();
+    const cutoffTime = new Date(now.getTime() - this.INACTIVITY_TIME);
+
+    this.onlineUsers = this.onlineUsers.filter((user) => {
+      return user.lastActivity >= cutoffTime;
+    });
+
+    this.server.emit('initialUserStatuses', this.usersOnline());
   }
 
   private resetInactivityTimer(userId: string, client?: Socket) {
