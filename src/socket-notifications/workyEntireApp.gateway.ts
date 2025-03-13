@@ -19,4 +19,9 @@ export class WorkyEntireAppGateway {
   handleNewComment(@MessageBody() payload?: any) {
     this.server.emit('generalNotification', payload);
   }
+
+  @SubscribeMessage('updateConfig')
+  handleUpdateConfig(@MessageBody() payload?: any) {
+    this.server.emit('updateConfig', payload);
+  }
 }
